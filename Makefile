@@ -43,7 +43,7 @@ OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 # =========================
 # Output
 # =========================
-TARGET := $(BIN_DIR)/renderer
+TARGET := $(BIN_DIR)/extractor
 
 # =========================
 # Rules
