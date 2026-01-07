@@ -29,8 +29,9 @@ void main() {
     vec3 L = normalize(-uSunDir);
 
     float diff = max(dot(N, L), 0.0);
+    diff = smoothstep(0.0, 1.0, diff);
 
-    vec3 color = uColor * (0.25 + diff * 0.75);
+    vec3 color = uColor * (3.0 + diff * 1.15);
     FragColor = vec4(color, 1.0);
 }
 )";
