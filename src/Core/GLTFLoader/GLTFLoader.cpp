@@ -120,6 +120,21 @@ static void processNode(
             m.transform = globalTransform;
             m.indexCount = static_cast<int>(indices.size());
 
+            glm::vec3 baseColor(0.8f, 0.8f, 0.8f);
+
+            if (prim.material >= 0 && prim.material < model.materials.size())
+            {
+                const auto &mat = model.materials[prim.material];
+
+                if (mat.values.find("baseColorFactor") != mat.values.end())
+                {
+                    auto color = mat.values.at("baseColorFactor").ColorFactor();
+                    baseColor = glm::vec3(color[0], color[1], color[2]);
+                }
+            }
+
+            m.color = baseColor;
+
             glGenVertexArrays(1, &m.vao);
             glGenBuffers(1, &m.vbo);
             glGenBuffers(1, &m.ebo);

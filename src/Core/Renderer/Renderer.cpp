@@ -22,7 +22,7 @@ void Renderer::render(
     {
         auto &m = scene.meshes[i];
 
-        m.color = glm::vec3(0.65f);
+        // m.color = glm::vec3(0.65f);
 
         for (int j = 0; j < meshes.size(); j++)
         {
