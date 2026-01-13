@@ -26,7 +26,7 @@ void Renderer::render(
 
         for (int j = 0; j < meshes.size(); j++)
         {
-            if (meshes[j].meshNumber == i)
+            if (m.name.find(meshes[j].meshName) != std::string::npos)
             {
                 m.color = glm::vec3(meshes[j].r, meshes[j].g, meshes[j].b);
             }

@@ -12,6 +12,7 @@ struct Mesh
     int indexCount{};
     glm::mat4 transform{DEFAULT_TRANSFORM_SIZE};
     glm::vec3 color{DEFAULT_OBJECT_COLOR};
+    std::string name;
 };
 
 #endif

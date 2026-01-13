@@ -5,7 +5,7 @@
 
 struct ColoredMesh
 {
-    int meshNumber;
+    std::string meshName;
     float r;
     float g;
     float b;

@@ -12,7 +12,7 @@ inline void from_json(const json &j, ColoredMesh &cm)
     j.at("r").get_to(cm.r);
     j.at("g").get_to(cm.g);
     j.at("b").get_to(cm.b);
-    j.at("meshNumber").get_to(cm.meshNumber);
+    j.at("meshName").get_to(cm.meshName);
 }
 
 int main(int argc, char **argv)
