@@ -22,8 +22,6 @@ void Renderer::render(
     {
         auto &m = scene.meshes[i];
 
-        // m.color = glm::vec3(0.65f);
-
         for (int j = 0; j < meshes.size(); j++)
         {
             if (m.name.find(meshes[j].meshName) != std::string::npos)
