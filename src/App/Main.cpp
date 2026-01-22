@@ -93,7 +93,7 @@ int main(int argc, char **argv)
     glm::vec3 cameraDir = glm::normalize(glm::vec3(camX, camY, camZ));
     glm::vec3 cameraPos = center + cameraDir * distance;
 
-    glm::vec3 sunDirection = glm::normalize(glm::vec3(0.0f) - cameraPos);
+    glm::vec3 sunDirection = glm::normalize(glm::vec3(0.0f, -1.0f, -0.25f));
 
     glm::mat4 view = glm::lookAt(
         cameraPos,

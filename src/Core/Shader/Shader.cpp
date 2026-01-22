@@ -17,21 +17,46 @@ void main() {
 }
 )";
 
-static const char *fragmentSrc = R"(#version 330 core
+static const char *fragmentSrc = R"(
+#version 330 core
 in vec3 Normal;
 out vec4 FragColor;
 
-uniform vec3 uColor;
+uniform vec3 uColor;        
 uniform vec3 uSunDir;
+uniform vec3 uViewDir;
 
-void main() {
+uniform float uMetallic;    
+uniform float uRoughness;   
+uniform float uClearCoat;   
+
+void main()
+{
+    float uMetallic2 = 0.6f;
+    float uRoughness2  = 0.18f;
+    float uClearCoat2  = 1.0f;
+
     vec3 N = normalize(Normal);
     vec3 L = normalize(-uSunDir);
+    vec3 V = normalize(uViewDir);
+    vec3 H = normalize(L + V);
 
     float diff = max(dot(N, L), 0.0);
-    diff = smoothstep(0.0, 1.0, diff);
+    vec3 diffuse = uColor * diff * 0.4;
 
-    vec3 color = uColor * (0.75 + diff * 0.35);
+    float shininess = mix(128.0, 16.0, uRoughness2);
+    float spec = pow(max(dot(N, H), 0.0), shininess);
+
+    vec3 metalSpec = mix(vec3(1.0), uColor, uMetallic2);
+    vec3 specular = metalSpec * spec * 1.1;
+
+    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 5.0);
+    float clearSpec = pow(max(dot(N, H), 0.0), 256.0);
+    vec3 clearCoat = vec3(clearSpec) * fresnel * uClearCoat2;
+
+    vec3 ambient = uColor * 0.65;
+
+    vec3 color = ambient + diffuse + specular + clearCoat;
     FragColor = vec4(color, 1.0);
 }
 )";
