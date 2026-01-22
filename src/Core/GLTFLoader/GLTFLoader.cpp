@@ -41,23 +41,20 @@ static void processNode(
     const glm::mat4 &parentTransform,
     Scene &scene)
 {
-    if (nodeIndex < 0 || nodeIndex >= model.nodes.size())
-        return;
-
     const auto &node = model.nodes[nodeIndex];
     glm::mat4 globalTransform = parentTransform * getLocalMatrix(node);
 
-    if (node.mesh >= 0 && node.mesh < model.meshes.size())
+    if (node.mesh >= 0)
     {
         const auto &mesh = model.meshes[node.mesh];
 
         for (const auto &prim : mesh.primitives)
         {
 
-            if (!prim.attributes.count("POSITION") ||
-                !prim.attributes.count("NORMAL") ||
-                prim.indices < 0)
-                continue;
+            // if (!prim.attributes.count("POSITION") ||
+            //     !prim.attributes.count("NORMAL") ||
+            //     prim.indices < 0)
+            //     continue;
 
             std::vector<float> vertices;
             std::vector<unsigned int> indices;
@@ -76,8 +73,6 @@ static void processNode(
             const float *normPtr = reinterpret_cast<const float *>(
                 &normBuf.data[normView.byteOffset + normAcc.byteOffset]);
 
-            vertices.reserve(posAcc.count * 6);
-
             for (size_t i = 0; i < posAcc.count; i++)
             {
                 glm::vec4 p = globalTransform * glm::vec4(
@@ -89,9 +84,8 @@ static void processNode(
                 scene.bbMin = glm::min(scene.bbMin, glm::vec3(p));
                 scene.bbMax = glm::max(scene.bbMax, glm::vec3(p));
 
-                vertices.insert(vertices.end(),
-                                {posPtr[i * 3 + 0], posPtr[i * 3 + 1], posPtr[i * 3 + 2],
-                                 normPtr[i * 3 + 0], normPtr[i * 3 + 1], normPtr[i * 3 + 2]});
+                vertices.insert(vertices.end(), {posPtr[i * 3 + 0], posPtr[i * 3 + 1], posPtr[i * 3 + 2],
+                                                 normPtr[i * 3 + 0], normPtr[i * 3 + 1], normPtr[i * 3 + 2]});
             }
 
             const auto &idxAcc = model.accessors[prim.indices];
@@ -100,8 +94,6 @@ static void processNode(
 
             const unsigned char *data =
                 &idxBuf.data[idxView.byteOffset + idxAcc.byteOffset];
-
-            indices.reserve(idxAcc.count);
 
             for (size_t i = 0; i < idxAcc.count; i++)
             {
@@ -112,27 +104,21 @@ static void processNode(
                 case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
                     index = reinterpret_cast<const uint8_t *>(data)[i];
                     break;
-
                 case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
                     index = reinterpret_cast<const uint16_t *>(data)[i];
                     break;
-
                 case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
                     index = reinterpret_cast<const uint32_t *>(data)[i];
                     break;
-
                 default:
-                    std::cout << "[WARN] Índice com tipo não suportado." << std::endl;
                     continue;
                 }
-
                 indices.push_back(index);
             }
 
             Mesh m;
             m.transform = globalTransform;
             m.indexCount = static_cast<int>(indices.size());
-            m.name = mesh.name.empty() ? node.name : mesh.name;
 
             glm::vec3 baseColor(0.8f, 0.8f, 0.8f);
 
@@ -175,10 +161,9 @@ static void processNode(
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
             glEnableVertexAttribArray(1);
 
-            std::cout << "Mesh carregado: " << m.name
-                      << " | Vertices: " << posAcc.count
-                      << " | Índices: " << indices.size()
-                      << std::endl;
+            m.name = node.name;
+
+            std::cout << m.name << std::endl;
 
             scene.meshes.push_back(m);
         }
@@ -194,31 +179,10 @@ bool GLTFLoader::load(const std::string &file, Scene &scene)
     tinygltf::TinyGLTF loader;
     std::string err, warn;
 
-    bool ok = false;
-
-    ok = loader.LoadBinaryFromFile(&model, &err, &warn, file);
-
-    if (!warn.empty())
-        std::cout << "[GLTF WARN] " << warn << std::endl;
-
-    if (!err.empty())
-        std::cout << "[GLTF ERR] " << err << std::endl;
-
-    if (!ok)
-    {
-        std::cout << "[GLTF ERROR] Falha ao carregar arquivo " << file << std::endl;
+    if (!loader.LoadBinaryFromFile(&model, &err, &warn, file))
         return false;
-    }
 
-    if (model.scenes.empty())
-    {
-        std::cout << "[GLTF ERROR] Arquivo não contém cenas." << std::endl;
-        return false;
-    }
-
-    int scnIndex = model.defaultScene >= 0 ? model.defaultScene : 0;
-    const auto &scn = model.scenes[scnIndex];
-
+    const auto &scn = model.scenes[model.defaultScene];
     for (int node : scn.nodes)
         processNode(model, node, glm::mat4(1.0f), scene);
 

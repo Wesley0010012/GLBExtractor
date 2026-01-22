@@ -10,49 +10,28 @@ uniform mat4 uView;
 uniform mat4 uProjection;
 
 out vec3 Normal;
-out vec3 FragPos;
 
 void main() {
     Normal = mat3(transpose(inverse(uModel))) * aNormal;
-    FragPos = vec3(uModel * vec4(aPos, 1.0));
     gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
 }
 )";
 
-static const char *fragmentSrc = R"(
-#version 330 core
+static const char *fragmentSrc = R"(#version 330 core
 in vec3 Normal;
-in vec3 FragPos;
-
 out vec4 FragColor;
 
 uniform vec3 uColor;
-uniform vec3 uCameraPos;
+uniform vec3 uSunDir;
 
-void main()
-{
-    vec3 uSunDir = vec3(0.0, -1.0, 0.0);
+void main() {
     vec3 N = normalize(Normal);
     vec3 L = normalize(-uSunDir);
 
     float diff = max(dot(N, L), 0.0);
+    diff = smoothstep(0.0, 1.0, diff);
 
-    diff = smoothstep(0.0, 0.8, diff);
-    
-    float nDetail = pow(abs(dot(N, vec3(0.8, 0.1, 0.6))), 2.0) * 0.15;
-
-    vec3 V = normalize(uCameraPos - FragPos);
-    vec3 H = normalize(L + V);
-
-    float spec = pow(max(dot(N, H), 0.0), 128.0);
-
-    float fresnel = pow(1.0 - max(dot(V, N), 0.0), 5.0);
-    
-    vec3 color =
-        uColor * (0.25 + diff + nDetail) +  
-        spec * 1.4 +                        
-        fresnel * 0.4;                      
-
+    vec3 color = uColor * (0.75 + diff * 0.35);
     FragColor = vec4(color, 1.0);
 }
 )";
